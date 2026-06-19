@@ -82,11 +82,70 @@ const quizQuestions = [
   },
 ];
 
-function Header() {
+const meterSliders = [
+  {
+    key: "duty",
+    label: "Duty",
+    description: "Family promises and responsibilities",
+  },
+  {
+    key: "fear",
+    label: "Fear",
+    description: "The emotional weight of the unknown",
+  },
+  {
+    key: "freedom",
+    label: "Desire for freedom",
+    description: "The wish to begin a different life",
+  },
+];
+
+const detectiveSituations = [
+  {
+    text: "A teenager wants to study abroad but is afraid of leaving home.",
+    answer: "Paralysis",
+    correctFeedback: "Exactly. Fear blocks action, so this is paralysis.",
+    retryFeedback:
+      "Good try. Look again at the keyword: afraid. Fear can make a person unable to act.",
+  },
+  {
+    text: "A student suddenly understands that fear has shaped many of her choices.",
+    answer: "Epiphany",
+    correctFeedback: "Exactly. Sudden understanding is an epiphany.",
+    retryFeedback:
+      "Good try. Look again at the keyword: suddenly understands. That points to epiphany.",
+  },
+  {
+    text: "Eveline wants to escape but remains still at the station.",
+    answer: "Both",
+    correctFeedback:
+      "Exactly. Eveline sees the choice, but paralysis stops her action.",
+    retryFeedback:
+      "Good try. Look again at the keyword: remains still. This scene shows both ideas.",
+  },
+  {
+    text: "A character sees ordinary life in a completely new way.",
+    answer: "Epiphany",
+    correctFeedback: "Exactly. Seeing life differently is an epiphany.",
+    retryFeedback:
+      "Good try. Look again at the keyword: new way. That points to a revelation.",
+  },
+  {
+    text: "A young person feels blocked by family expectations.",
+    answer: "Paralysis",
+    correctFeedback: "Exactly. Family pressure creates paralysis.",
+    retryFeedback:
+      "Good try. Look again at the keyword: blocked. This means unable to act.",
+  },
+];
+
+function Header({ inclusiveMode, onToggleInclusive }) {
   const links = [
     ["Recap", "#recap"],
     ["Concepts", "#concepts"],
     ["Eveline", "#eveline"],
+    ["Simulator", "#escape-meter"],
+    ["Detective", "#detective-lab"],
     ["Glossary", "#glossary"],
     ["Quiz", "#quiz"],
     ["Exit Ticket", "#exit-ticket"],
@@ -106,6 +165,20 @@ function Header() {
           </a>
         ))}
       </nav>
+      <button
+        className={`inclusive-toggle ${inclusiveMode ? "active" : ""}`}
+        type="button"
+        aria-label={
+          inclusiveMode ? "Turn Inclusive Mode off" : "Turn Inclusive Mode on"
+        }
+        aria-pressed={inclusiveMode}
+        onClick={onToggleInclusive}
+      >
+        <span className="toggle-track" aria-hidden="true">
+          <span className="toggle-dot" />
+        </span>
+        Inclusive Mode
+      </button>
     </header>
   );
 }
@@ -166,6 +239,48 @@ function SectionHeader({ eyebrow, title, children }) {
   );
 }
 
+function ActivitySupport({ hint, keywords, id }) {
+  const [showHint, setShowHint] = useState(false);
+  const [showKeywords, setShowKeywords] = useState(false);
+
+  return (
+    <div className="activity-support">
+      <div className="support-actions">
+        <button
+          className="support-button"
+          type="button"
+          aria-controls={`${id}-hint`}
+          aria-expanded={showHint}
+          onClick={() => setShowHint((isVisible) => !isVisible)}
+        >
+          Read hint
+        </button>
+        <button
+          className="support-button"
+          type="button"
+          aria-controls={`${id}-keywords`}
+          aria-expanded={showKeywords}
+          onClick={() => setShowKeywords((isVisible) => !isVisible)}
+        >
+          Show keywords
+        </button>
+      </div>
+      {showHint && (
+        <p className="support-panel" id={`${id}-hint`}>
+          {hint}
+        </p>
+      )}
+      {showKeywords && (
+        <div className="support-panel keyword-panel" id={`${id}-keywords`}>
+          {keywords.map((keyword) => (
+            <span key={keyword}>{keyword}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecapCards() {
   return (
     <section className="section band-light" id="recap">
@@ -211,7 +326,7 @@ function ConceptCards() {
   );
 }
 
-function EvelineActivity() {
+function EvelineActivity({ inclusiveMode }) {
   const [selectedChoice, setSelectedChoice] = useState("Duty");
 
   return (
@@ -220,21 +335,37 @@ function EvelineActivity() {
         <div>
           <p className="eyebrow">Focus On Eveline</p>
           <h2>Duty, Fear and the Dream of Escape</h2>
-          <p>
-            In "Eveline", the protagonist dreams of escaping from her difficult
-            life in Dublin, but at the end she is unable to leave. Her paralysis
-            reveals the conflict between duty, fear and desire for freedom.
-          </p>
+          {inclusiveMode ? (
+            <p>
+              Eveline wants to leave Dublin. At the station, she cannot move.
+              Duty and fear are stronger than her wish to escape.
+            </p>
+          ) : (
+            <p>
+              In "Eveline", the protagonist dreams of escaping from her difficult
+              life in Dublin, but at the end she is unable to leave. Her paralysis
+              reveals the conflict between duty, fear and desire for freedom.
+            </p>
+          )}
         </div>
 
         <div className="activity-panel" aria-labelledby="eveline-question">
           <h3 id="eveline-question">Why does Eveline remain unable to act?</h3>
+          <p className="activity-instructions">
+            Work in pairs. Choose one reason, then explain your choice.
+          </p>
+          <ActivitySupport
+            id="eveline-support"
+            hint="Think about what makes Eveline unable to act."
+            keywords={["duty", "fear", "freedom", "unable to act"]}
+          />
           <div className="choice-group" role="group" aria-label="Choose a reason">
             {Object.keys(evelineChoices).map((choice) => (
               <button
                 className={selectedChoice === choice ? "selected" : ""}
                 key={choice}
                 type="button"
+                aria-label={`Choose ${choice} as Eveline's reason`}
                 aria-pressed={selectedChoice === choice}
                 onClick={() => setSelectedChoice(choice)}
               >
@@ -243,6 +374,208 @@ function EvelineActivity() {
             ))}
           </div>
           <p className="choice-feedback">{evelineChoices[selectedChoice]}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EscapeMeter() {
+  const [values, setValues] = useState({
+    duty: 7,
+    fear: 8,
+    freedom: 6,
+  });
+  const [result, setResult] = useState("");
+
+  const pressureScore = Number(values.duty) + Number(values.fear);
+  const freedomScore = Number(values.freedom);
+
+  function updateValue(key, value) {
+    setValues((currentValues) => ({
+      ...currentValues,
+      [key]: Number(value),
+    }));
+    setResult("");
+  }
+
+  function calculateChoice() {
+    setResult(
+      freedomScore > pressureScore
+        ? "Your Eveline tries to leave."
+        : "Your Eveline stays in Dublin.",
+    );
+  }
+
+  return (
+    <section className="section" id="escape-meter">
+      <div className="container simulator-layout">
+        <SectionHeader
+          eyebrow="Escape Meter"
+          title="Eveline Simulator"
+        >
+          Move the sliders in small groups. Then calculate Eveline's choice.
+        </SectionHeader>
+
+        <div className="simulator-panel">
+          <p className="activity-instructions">
+            Work with a partner. Set the three values from 0 to 10.
+          </p>
+          <ActivitySupport
+            id="meter-support"
+            hint="If duty and fear are stronger than freedom, Eveline cannot act."
+            keywords={["duty", "fear", "freedom", "paralysis"]}
+          />
+
+          <div className="slider-grid">
+            {meterSliders.map((slider) => (
+              <label className="meter-slider" key={slider.key}>
+                <span>
+                  <strong>{slider.label}</strong>
+                  <small>{slider.description}</small>
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={values[slider.key]}
+                  aria-label={`${slider.label} value`}
+                  onChange={(event) => updateValue(slider.key, event.target.value)}
+                />
+                <output aria-label={`${slider.label} current value`}>
+                  {values[slider.key]}
+                </output>
+              </label>
+            ))}
+          </div>
+
+          <button
+            className="button primary action-button"
+            type="button"
+            aria-label="Calculate Eveline's choice"
+            onClick={calculateChoice}
+          >
+            Calculate Eveline's choice
+          </button>
+
+          <div className="meter-result" role="status" aria-live="polite">
+            {result && <strong>{result}</strong>}
+            <p>
+              Joyce's ending shows that Eveline's paralysis is stronger than her
+              desire for escape.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DetectiveLab() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState("");
+
+  const currentSituation = detectiveSituations[currentIndex];
+  const hasAnswered = selectedAnswer !== "";
+  const isCorrect = selectedAnswer === currentSituation.answer;
+
+  function chooseAnswer(answer) {
+    if (hasAnswered) {
+      return;
+    }
+
+    setSelectedAnswer(answer);
+  }
+
+  function goToNextSituation() {
+    if (currentIndex === detectiveSituations.length - 1) {
+      setCurrentIndex(0);
+    } else {
+      setCurrentIndex((index) => index + 1);
+    }
+
+    setSelectedAnswer("");
+  }
+
+  return (
+    <section className="section band-light" id="detective-lab">
+      <div className="container detective-layout">
+        <SectionHeader
+          eyebrow="Detective Lab"
+          title="Paralysis/Epiphany Detective Lab"
+        >
+          Read one situation. Choose the best concept. Discuss in pairs.
+        </SectionHeader>
+
+        <div className="detective-panel">
+          <p className="activity-instructions">
+            No timer. Read slowly. Look for the keyword.
+          </p>
+          <ActivitySupport
+            id="detective-support"
+            hint="Paralysis means unable to act. Epiphany means sudden awareness."
+            keywords={["unable to act", "sudden awareness", "blocked", "new way"]}
+          />
+
+          <div className="lab-progress">
+            Situation {currentIndex + 1} of {detectiveSituations.length}
+          </div>
+          <p className="situation-card">{currentSituation.text}</p>
+
+          <div
+            className="detective-options"
+            role="group"
+            aria-label="Choose paralysis, epiphany or both"
+          >
+            {["Paralysis", "Epiphany", "Both"].map((answer) => (
+              <button
+                className={[
+                  "detective-button",
+                  selectedAnswer === answer ? "selected" : "",
+                  hasAnswered && answer === currentSituation.answer ? "correct" : "",
+                  selectedAnswer === answer && !isCorrect ? "wrong" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                key={answer}
+                type="button"
+                disabled={hasAnswered}
+                aria-label={`Choose ${answer} for the detective lab`}
+                aria-pressed={selectedAnswer === answer}
+                onClick={() => chooseAnswer(answer)}
+              >
+                {answer}
+              </button>
+            ))}
+          </div>
+
+          {hasAnswered && (
+            <div
+              className={`feedback detective-feedback ${isCorrect ? "correct" : "wrong"}`}
+              role="status"
+              aria-live="polite"
+            >
+              {isCorrect
+                ? currentSituation.correctFeedback
+                : currentSituation.retryFeedback}
+            </div>
+          )}
+
+          <button
+            className="button secondary next-button"
+            type="button"
+            disabled={!hasAnswered}
+            aria-label={
+              currentIndex === detectiveSituations.length - 1
+                ? "Restart detective lab"
+                : "Go to next situation"
+            }
+            onClick={goToNextSituation}
+          >
+            {currentIndex === detectiveSituations.length - 1
+              ? "Start Again"
+              : "Next Situation"}
+          </button>
         </div>
       </div>
     </section>
@@ -353,6 +686,14 @@ function Quiz() {
               <div className="quiz-progress">
                 Question {currentIndex + 1} of {quizQuestions.length}
               </div>
+              <p className="activity-instructions">
+                Choose one answer. You get feedback immediately.
+              </p>
+              <ActivitySupport
+                id="quiz-support"
+                hint="Look for key words from the recap and concept cards."
+                keywords={["Joyce", "short stories", "paralysis", "epiphany"]}
+              />
               <h3>{currentQuestion.question}</h3>
               <div className="answer-grid">
                 {currentQuestion.options.map((option, index) => {
@@ -372,6 +713,7 @@ function Quiz() {
                       key={option}
                       type="button"
                       disabled={hasAnswered}
+                      aria-label={`Answer ${label}: ${option}`}
                       onClick={() => handleAnswer(option)}
                     >
                       <span>{label}</span>
@@ -385,7 +727,7 @@ function Quiz() {
                 <div className={`feedback ${isCorrect ? "correct" : "wrong"}`}>
                   {isCorrect
                     ? "Correct. Nice work."
-                    : `Not quite. The correct answer is: ${currentQuestion.answer}.`}
+                    : `Good try. Look again at the keyword. The correct answer is: ${currentQuestion.answer}.`}
                 </div>
               )}
 
@@ -485,6 +827,10 @@ function TeacherResources() {
     ["Guided questions", "What stops the characters from changing?"],
     ["Suggested classroom task", "Compare Eveline's final decision with another story."],
     ["Assessment focus", "Use textual evidence to explain Joyce's ideas."],
+    [
+      "Inclusive teaching choices",
+      "This learning hub includes short instructions, clear visual structure, immediate feedback, no time pressure, keyboard-friendly navigation and an optional Inclusive Mode. These choices support students with DSA/BES and help the whole class work more confidently.",
+    ],
   ];
 
   return (
@@ -517,23 +863,30 @@ function Footer() {
 }
 
 export default function App() {
+  const [inclusiveMode, setInclusiveMode] = useState(false);
+
   return (
-    <>
+    <div className={inclusiveMode ? "app inclusive-mode" : "app"}>
       <a className="skip-link" href="#recap">
         Skip to learning content
       </a>
-      <Header />
+      <Header
+        inclusiveMode={inclusiveMode}
+        onToggleInclusive={() => setInclusiveMode((isActive) => !isActive)}
+      />
       <main>
         <Hero />
         <RecapCards />
         <ConceptCards />
-        <EvelineActivity />
+        <EvelineActivity inclusiveMode={inclusiveMode} />
+        <EscapeMeter />
+        <DetectiveLab />
         <Glossary />
         <Quiz />
         <ExitTicket />
         <TeacherResources />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
